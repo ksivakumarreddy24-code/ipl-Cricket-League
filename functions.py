@@ -332,9 +332,13 @@ def get_leaderboard(contest_id):
         for item in history:
             total_points += item.points
         team = session.query(FantasyTeam).filter_by(id=entry.fantasy_team_id).first()
+        if team is not None:
+            team_name = team.name
+        else:
+            team_name = "Unknown"
         results.append({
             "fantasy_team_id": entry.fantasy_team_id,
-            "team_name": team.name if team else "Unknown",
+            "team_name": team_name,
             "points": total_points
         })
 
@@ -345,5 +349,32 @@ def get_leaderboard(contest_id):
     for i in range(len(results)):
         results[i]["rank"] = i + 1
 
+    session.close()
+    return results
+
+# E15 - Get fantasy points history
+def get_fantasy_points_history(user_id):
+    session = Session(engine)
+    teams = session.query(FantasyTeam).filter_by(user_id=user_id).all()
+    results = []
+    for team in teams:
+        entries = session.query(ContestEntry).filter_by(fantasy_team_id=team.id).all()
+        for entry in entries:
+            history_records = session.query(FantasyPointsHistory).filter_by(contest_entry_id=entry.id).all()
+            contest = session.query(Contest).filter_by(id=entry.contest_id).first()
+            if contest is not None:
+                contest_name = contest.name
+            else:
+                contest_name = "Unknown"
+            for history in history_records:
+                results.append({
+                    "fantasy_team_id": team.id,
+                    "team_name": team.name,
+                    "contest_id": entry.contest_id,
+                    "contest_name": contest_name,
+                    "match_id": history.match_id,
+                    "points": history.points,
+                    "created_at": history.created_at
+                })
     session.close()
     return results
