@@ -1,7 +1,7 @@
 
-from fastapi import FastAPI, HTTPException,Header
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 import functions
 
@@ -18,8 +18,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-@app.get("/all tournaments")
-def get_tournaments():
-    return functions.get_all_tournament()
-    
