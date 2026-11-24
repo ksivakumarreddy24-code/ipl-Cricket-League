@@ -61,5 +61,24 @@ class Match(Base):
     status = Column(String, default="upcoming")
 
 #
-
 Base.metadata.create_all(engine)
+
+def get_all_tournament():
+    session = Session(engine)
+    all_tournaments=session.query(Tournament).all
+    response = []
+    for tournament in all_tournaments:
+        temp_tournament = {
+            "id" : tournament.id,
+            "name" : tournament.name,
+            "season": tournament.season,
+            "start_date" :tournament.start_date,
+            "end_date" :tournament.end_date,
+            "created_by" : tournament.created_by
+        }    
+        response.append(temp_tournament)
+    session.close()
+    return response
+
+def add_fantasy_team():
+    

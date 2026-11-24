@@ -18,3 +18,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+@app.get("/all tournaments")
+def get_tournaments():
+    return functions.get_all_tournament()
+    
