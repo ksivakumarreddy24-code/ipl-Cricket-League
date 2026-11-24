@@ -48,6 +48,17 @@ class JoinContestRequest(BaseModel):
     fantasy_team_id: int
 
 
+class PlayerStatsRequest(BaseModel):
+    player_id: int
+    runs: int
+    fours: int
+    sixes: int
+    wickets: int
+    catches: int
+    run_outs: int
+    stumpings: int
+
+
 # Resolve the verifier dynamically so module type checkers do not require a
 # statically declared attribute on the functions module.
 def verify_token(token: str, token_type: str):
@@ -75,43 +86,20 @@ def home():
 # A1 - Register user
 @app.post("/auth/register", status_code=201)
 def register(data: RegisterRequest):
-
     if not data.username.strip() or not data.password.strip():
-        raise HTTPException(
-            status_code=422,
-            detail="Username and password cannot be empty"
-        )
-
-    result = functions.register_user(
-        data.username,
-        data.email,
-        data.password
-    )
-
+        raise HTTPException(status_code=422,detail="Username and password cannot be empty")
+    result = functions.register_user(data.username,data.email,data.password)
     if result is False:
-        raise HTTPException(
-            status_code=409,
-            detail="Email already exists"
-        )
-
+        raise HTTPException(status_code=409,detail="Email already exists")
     return result
 
 
 # A2 - Login user
 @app.post("/auth/login")
 def login(data: LoginRequest):
-
-    result = functions.verify_login(
-        data.email,
-        data.password
-    )
-
+    result = functions.verify_login(data.email,data.password)
     if result is False:
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect email or password"
-        )
-
+        raise HTTPException(status_code=401,detail="Incorrect email or password")
     return result
 
 
@@ -152,4 +140,18 @@ def join_contest(contest_id: int,data: JoinContestRequest,token: str = Header(No
         raise HTTPException(status_code=409, detail="Fantasy team already joined")
     if result == "contest_full":
         raise HTTPException(status_code=400, detail="Contest is full")
+    return result
+
+# E13 - Publish player statistics
+@app.post("/matches/{match_id}/stats")
+def publish_stats(match_id: int,data: PlayerStatsRequest,token: str = Header(None)):
+    user_id = get_current_user(token)
+    stats = [data.runs,data.fours,data.sixes,data.wickets,data.catches,data.run_outs,data.stumpings]
+    if any(value < 0 for value in stats):
+        raise HTTPException(status_code=422,detail="Statistics cannot be negative")
+    result = functions.publish_player_stats(match_id,data.player_id,data.runs,data.fours,data.sixes,data.wickets,data.catches,data.run_outs,data.stumpings)
+    if result == None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    if result == None:
+        raise HTTPException(status_code=404, detail="Player not found")
     return result

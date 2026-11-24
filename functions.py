@@ -256,3 +256,63 @@ def join_contest(contest_id, fantasy_team_id, user_id):
     }
     session.close()
     return response
+
+# E13 - Publish player statistics
+def publish_player_stats(match_id,player_id,runs,fours,sixes,wickets,catches,run_outs,stumpings):
+    session = Session(engine)
+    match = session.query(Match).filter_by(id=match_id).first()
+    if match is None:
+        session.close()
+        return None
+    player = session.query(Player).filter_by(id=player_id).first()
+    if player is None:
+        session.close()
+        return None
+    stat = session.query(PlayerMatchStat).filter_by(match_id=match_id,player_id=player_id).first()
+    if stat is None:
+        stat = PlayerMatchStat(match_id=match_id,player_id=player_id)
+        session.add(stat)
+
+    stat.runs = runs
+    stat.fours = fours
+    stat.sixes = sixes
+    stat.wickets = wickets
+    stat.catches = catches
+    stat.run_outs = run_outs
+    stat.stumpings = stumpings
+
+    session.commit()
+
+    contests = session.query(Contest).filter_by(match_id=match_id).all()
+    for contest in contests:
+        entries = session.query(ContestEntry).filter_by(contest_id=contest.id).all()
+        for entry in entries:
+            team_players = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=entry.fantasy_team_id).all()
+            total_points = 0
+            for item in team_players:
+                player_stat = session.query(PlayerMatchStat).filter_by(match_id=match_id,player_id=item.player_id).first()
+                if player_stat is not None:
+                    points = (
+                        player_stat.runs
+                        + player_stat.fours
+                        + (player_stat.sixes * 2)
+                        + (player_stat.wickets * 25)
+                        + (player_stat.catches * 8)
+                        + (player_stat.run_outs * 12)
+                        + (player_stat.stumpings * 12)
+                    )
+                    total_points += points
+            history = session.query(FantasyPointsHistory).filter_by(contest_entry_id=entry.id,match_id=match_id).first()
+            if history is None:
+                history = FantasyPointsHistory(contest_entry_id=entry.id,match_id=match_id,points=total_points)
+                session.add(history)
+            else:
+                 history.points = total_points #type: ignore
+    session.commit()
+    response = {
+        "message": "Player statistics published successfully",
+        "match_id": match_id,
+        "player_id": player_id
+    }
+    session.close()
+    return response
