@@ -316,3 +316,34 @@ def publish_player_stats(match_id,player_id,runs,fours,sixes,wickets,catches,run
     }
     session.close()
     return response
+
+# E14 - Get contest leaderboard
+def get_leaderboard(contest_id):
+    session = Session(engine)
+    contest = session.query(Contest).filter_by(id=contest_id).first()
+    if contest is None:
+        session.close()
+        return False
+    entries = session.query(ContestEntry).filter_by(contest_id=contest_id).all()
+    results = []
+    for entry in entries:
+        history = session.query(FantasyPointsHistory).filter_by(contest_entry_id=entry.id).all()
+        total_points = 0
+        for item in history:
+            total_points += item.points
+        team = session.query(FantasyTeam).filter_by(id=entry.fantasy_team_id).first()
+        results.append({
+            "fantasy_team_id": entry.fantasy_team_id,
+            "team_name": team.name if team else "Unknown",
+            "points": total_points
+        })
+
+    def get_points(item):
+        return item["points"]
+
+    results.sort(key=get_points, reverse=True)
+    for i in range(len(results)):
+        results[i]["rank"] = i + 1
+
+    session.close()
+    return results

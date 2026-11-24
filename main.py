@@ -155,3 +155,11 @@ def publish_stats(match_id: int,data: PlayerStatsRequest,token: str = Header(Non
     if result == None:
         raise HTTPException(status_code=404, detail="Player not found")
     return result
+
+# E14 - Get contest leaderboard
+@app.get("/contests/{contest_id}/leaderboard")
+def get_contest_leaderboard(contest_id: int):
+    result = functions.get_leaderboard(contest_id)
+    if result is False:
+        raise HTTPException(status_code=404, detail="Contest not found")
+    return result
