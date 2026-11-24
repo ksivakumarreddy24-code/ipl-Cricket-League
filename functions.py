@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, create_engine #pyright: ignore
 from sqlalchemy.orm import Session, declarative_base #pyright: ignore
 import jwt #pyright: ignore
@@ -94,6 +94,111 @@ class ContestEntry(Base):
     fantasy_team_id = Column(Integer, ForeignKey("fantasy_teams.id"))
     joined_at = Column(DateTime, default=datetime.now)
 
+# 9. Player match statistics table
+class PlayerMatchStat(Base):
+    __tablename__ = "player_match_stats"
+    id = Column(Integer, primary_key=True, index=True)
+    match_id = Column(Integer, ForeignKey("matches.id"))
+    player_id = Column(Integer, ForeignKey("players.id"))
+    runs = Column(Integer, default=0)
+    fours = Column(Integer, default=0)
+    sixes = Column(Integer, default=0)
+    wickets = Column(Integer, default=0)
+    catches = Column(Integer, default=0)
+    run_outs = Column(Integer, default=0)
+    stumpings = Column(Integer, default=0)
 
+# 10. Fantasy points history table
+class FantasyPointsHistory(Base):
+    __tablename__ = "fantasy_points_history"
+    id = Column(Integer, primary_key=True, index=True)
+    contest_entry_id = Column(Integer, ForeignKey("contest_entries.id"))
+    match_id = Column(Integer, ForeignKey("matches.id"))
+    points = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.now)
 
 Base.metadata.create_all(engine)
+
+
+# Register user
+# Hash a password before storing it.
+def hash_password(password):
+    return ph.hash(password)
+
+
+def verify_password(password, hashed_password):
+    try:
+        return ph.verify(hashed_password, password)
+    except VerifyMismatchError:
+        return False
+
+
+# Register user
+def register_user(username, email, password):
+
+    session = Session(engine)
+
+    user_exists = session.query(User).filter_by(email=email).first()
+
+    if user_exists is not None:
+        session.close()
+        return False
+
+    new_user = User(
+        username=username,
+        email=email,
+        hashed_password=hash_password(password),
+        role="user"
+    )
+
+    session.add(new_user)
+    session.commit()
+
+    response = {
+        "id": new_user.id,
+        "username": new_user.username,
+        "email": new_user.email,
+        "role": new_user.role
+    }
+
+    session.close()
+    return response
+
+# Create a signed access or refresh token.
+def create_token(user_id, token_type):
+    expiry_minutes = (
+        ACCESS_TOKEN_EXPIRY if token_type == "access" else REFRESH_TOKEN_EXPIRY
+    )
+    payload = {
+        "user_id": user_id,
+        "type": token_type,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=expiry_minutes),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+# Verify login
+def verify_login(email, password):
+
+    session = Session(engine)
+
+    user = session.query(User).filter_by(email=email).first()
+
+    if user is None:
+        session.close()
+        return False
+
+    if verify_password(password, user.hashed_password) is False:
+        session.close()
+        return False
+
+    user_id = user.id
+    session.close()
+
+    access_token = create_token(user_id, "access")
+    refresh_token = create_token(user_id, "refresh")
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
