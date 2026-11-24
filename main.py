@@ -37,6 +37,13 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class ContestRequest(BaseModel):
+    match_id: int
+    name: str
+    entry_fee: float
+    max_entries: int
+
+
 # Resolve the verifier dynamically so module type checkers do not require a
 # statically declared attribute on the functions module.
 def verify_token(token: str, token_type: str):
@@ -129,3 +136,16 @@ def refresh_token(data: RefreshRequest):
         "token_type": "bearer"
     }
 
+# E11 - Create contest
+@app.post("/contests", status_code=201)
+def create_contest(data: ContestRequest, token: str = Header(None)):
+    user_id = get_current_user(token)
+    if not data.name.strip():
+        raise HTTPException(status_code=422, detail="Contest name cannot be empty")
+    if data.entry_fee < 0 or data.max_entries <= 0:
+        raise HTTPException(status_code=422, detail="Invalid contest values")
+    result = functions.create_contest(data.match_id,data.name,data.entry_fee,data.max_entries,user_id)
+
+    if result == None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    return result

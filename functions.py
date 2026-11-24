@@ -202,3 +202,25 @@ def verify_login(email, password):
         "refresh_token": refresh_token,
         "token_type": "bearer"
     }
+
+# E11 - Create contest
+def create_contest(match_id, name, entry_fee, max_entries, user_id):
+    session = Session(engine)
+    match = session.query(Match).filter_by(id=match_id).first()
+    if match is None:
+        session.close()
+        return None
+
+    new_contest = Contest(match_id=match_id,name=name,entry_fee=entry_fee,max_entries=max_entries,created_by=user_id)
+    session.add(new_contest)
+    session.commit()
+    response = {
+        "id": new_contest.id,
+        "match_id": new_contest.match_id,
+        "name": new_contest.name,
+        "entry_fee": new_contest.entry_fee,
+        "max_entries": new_contest.max_entries,
+        "created_by": new_contest.created_by}
+
+    session.close()
+    return response
