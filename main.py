@@ -44,6 +44,10 @@ class ContestRequest(BaseModel):
     max_entries: int
 
 
+class JoinContestRequest(BaseModel):
+    fantasy_team_id: int
+
+
 # Resolve the verifier dynamically so module type checkers do not require a
 # statically declared attribute on the functions module.
 def verify_token(token: str, token_type: str):
@@ -115,26 +119,11 @@ def login(data: LoginRequest):
 @app.post("/auth/refresh")
 def refresh_token(data: RefreshRequest):
 
-    user_id = verify_token(
-        data.refresh_token,
-        "refresh"
-    )
-
+    user_id = verify_token(data.refresh_token,"refresh")
     if user_id is False:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or expired refresh token"
-        )
-
-    new_access_token = functions.create_token(
-        user_id,
-        "access"
-    )
-
-    return {
-        "access_token": new_access_token,
-        "token_type": "bearer"
-    }
+        raise HTTPException(status_code=401,detail="Invalid or expired refresh token")
+    new_access_token = functions.create_token(user_id,"access")
+    return {"access_token": new_access_token,"token_type": "bearer"}
 
 # E11 - Create contest
 @app.post("/contests", status_code=201)
@@ -148,4 +137,19 @@ def create_contest(data: ContestRequest, token: str = Header(None)):
 
     if result == None:
         raise HTTPException(status_code=404, detail="Match not found")
+    return result
+
+# E12 - Join contest
+@app.post("/contests/{contest_id}/join", status_code=201)
+def join_contest(contest_id: int,data: JoinContestRequest,token: str = Header(None)):
+    user_id = get_current_user(token)
+    result = functions.join_contest(contest_id,data.fantasy_team_id,user_id)
+    if result == None:
+        raise HTTPException(status_code=404, detail="Contest not found")
+    if result == None:
+        raise HTTPException(status_code=404, detail="Fantasy team not found")
+    if result == "already_joined":
+        raise HTTPException(status_code=409, detail="Fantasy team already joined")
+    if result == "contest_full":
+        raise HTTPException(status_code=400, detail="Contest is full")
     return result

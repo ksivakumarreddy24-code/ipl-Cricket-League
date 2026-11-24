@@ -224,3 +224,35 @@ def create_contest(match_id, name, entry_fee, max_entries, user_id):
 
     session.close()
     return response
+
+# E12 - Join contest
+def join_contest(contest_id, fantasy_team_id, user_id):
+    session = Session(engine)
+    contest = session.query(Contest).filter_by(id=contest_id).first()
+    if contest is None:
+        session.close()
+        return None
+    team = session.query(FantasyTeam).filter_by(id=fantasy_team_id,user_id=user_id).first()
+    if team is None:
+        session.close()
+        return None
+    existing_entry = session.query(ContestEntry).filter_by(contest_id=contest_id,fantasy_team_id=fantasy_team_id).first()
+    if existing_entry is not None:
+        session.close()
+        return "already_joined"
+    entry_count = session.query(ContestEntry).filter_by(contest_id=contest_id).count()
+    if entry_count >= int(contest.maxentries):
+        session.close()
+        return "contest_full"
+
+    new_entry = ContestEntry(contest_id=contest_id,fantasy_team_id=fantasy_team_id)
+    session.add(new_entry)
+    session.commit()
+    response = {
+        "id": new_entry.id,
+        "contest_id": new_entry.contest_id,
+        "fantasy_team_id": new_entry.fantasy_team_id,
+        "joined_at": new_entry.joined_at
+    }
+    session.close()
+    return response
