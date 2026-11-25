@@ -2,10 +2,6 @@ from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel, Field
 import functions
 
-app = FastAPI()
-
-class FantasyTeamData(BaseModel):
-    team_name: str = Field(min_length=1)
 
 class AddPlayerData(BaseModel):
     fantasy_team_id: int
@@ -35,7 +31,7 @@ def add_player(data: AddPlayerData, token: str = Header(None)):
     if not response:
         raise HTTPException(status_code=400, detail="Unable to add player.")
     return response
-
+ 
 @app.delete("/fantasy-team/player")
 def remove_player(data: RemovePlayerData, token: str = Header(None)):
     user_id = functions.verify_token(token=token, token_type="access")
