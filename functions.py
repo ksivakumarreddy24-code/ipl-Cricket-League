@@ -119,6 +119,22 @@ class FantasyPointsHistory(Base):
 
 Base.metadata.create_all(engine)
 
+ADMIN = "admin"
+ORGANIZER = "organizer"
+USER = "user"
+
+
+# Get user's role
+def get_user_role(user_id):
+    session = Session(engine)
+    user = session.query(User).filter_by(id=user_id).first()
+    if user is None:
+        session.close()
+        return False
+    role = user.role
+    session.close()
+    return role
+
 
 # Register user
 # Hash a password before storing it.
@@ -182,7 +198,8 @@ def verify_login(email, password):
     if user is None:
         session.close()
         return False
-    if verify_password(password, user.hashed_password) is False:
+    if verify_password(password, user.password) is False:
+
         session.close()
         return False
     user_id = user.id
@@ -608,3 +625,19 @@ def get_all_matches():
     session.close()
     return response
 
+
+def create_test_accounts():
+    session = Session(engine)
+    accounts = [
+        ("Test Admin", "admin@test.com", "Admin@123", ADMIN),
+        ("Test Organizer", "organizer@test.com", "Organizer@123", ORGANIZER),
+        ("Test User", "user@test.com", "User@123", User)
+    ]
+    for name, email, password, role in accounts:
+        existing_user = session.query(User).filter_by(email=email).first()
+        if existing_user is None:
+            new_user = User(name=name,email=email,password=hash_password(password),role=role)
+            session.add(new_user)
+    session.commit()
+    session.close()
+    return "Test accounts created successfully"

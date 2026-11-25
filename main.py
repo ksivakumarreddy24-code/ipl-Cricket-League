@@ -98,6 +98,7 @@ class MatchRequest(BaseModel):
     match_date: datetime
 
 
+
 def verify_token(token: str, token_type: str):
     verifier = getattr(functions, "verify_token", None)
     if not callable(verifier):
@@ -113,6 +114,17 @@ def get_current_user(token: str):
     if user_id is False:
         raise HTTPException(status_code=401,detail="Invalid or expired access token")
     return user_id
+
+
+def check_role(token: str, allowed_roles: list):
+    user_id = get_current_user(token)
+    role = functions.get_user_role(user_id)
+    if role is False:
+        raise HTTPException(status_code=401,detail="User not found")
+    if role not in allowed_roles:
+        raise HTTPException(status_code=403,detail="You don't have permission to perform this action")
+    return user_id
+
 
 
 @app.get("/")
@@ -153,7 +165,8 @@ def refresh_token(data: RefreshRequest):
 
 # E1 - Create Organizer
 @app.post("/organizers")
-def create_organizer(data: OrganizerRequest):
+def create_organizer(data: OrganizerRequest, token: str = Header(None)):
+    check_role(token, [functions.ADMIN])
     result = functions.create_organizer(data.name,data.email,data.password)
     if result is False:
         raise HTTPException(status_code=400,detail="Email already exists")
@@ -161,7 +174,8 @@ def create_organizer(data: OrganizerRequest):
 
 # E2 - Add Player
 @app.post("/players")
-def add_player(data: PlayerRequest):
+def add_player(data: PlayerRequest, token: str = Header(None)):
+    check_role(token, [functions.ORGANIZER])
     result = functions.add_player(data.name,data.country,data.team,data.role)
     return result
 
@@ -180,24 +194,29 @@ def get_player_by_id(player_id: int):
 
 # E5 - Create Tournament
 @app.post("/tournaments")
-def create_tournament(data: TournamentRequest):
+def create_tournament(data: TournamentRequest, token: str = Header(None)):
+    check_role(token, [functions.ORGANIZER])
     result = functions.create_tournament(data.name,data.season,data.start_date,data.end_date,1)
     return result
 
-
+# E6 - Get all Tournaments
 @app.get("/tournaments")
 def get_all_tournaments():
     return functions.get_all_tournaments()
 
+# E7 - create teams
 @app.post("/fantasy-team")
 def create_fantasy_team(data: FantasyTeamData, token: str = Header(None)):
+    check_role(token, [functions.USER])
     user_id = verify_token(token, "access")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired access token.")
     return functions.create_fantasy_team(user_id, data.team_name)
 
+# E8 - adding a players
 @app.post("/fantasy-team/player")
 def add_player_to_fantasy_team(data: AddPlayerData, token: str = Header(None)):
+    check_role(token, [functions.USER])
     user_id = verify_token(token, "access")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired access token.")
@@ -206,8 +225,10 @@ def add_player_to_fantasy_team(data: AddPlayerData, token: str = Header(None)):
         raise HTTPException(status_code=400, detail="Unable to add player.")
     return response
 
+# E9 - remove a player
 @app.delete("/fantasy-team/player")
 def remove_player(data: RemovePlayerData, token: str = Header(None)):
+    check_role(token, [functions.USER])
     user_id = verify_token(token, "access")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired access token.")
@@ -216,8 +237,10 @@ def remove_player(data: RemovePlayerData, token: str = Header(None)):
         raise HTTPException(status_code=404, detail="Player not found.")
     return {"message": "Player removed successfully"}
 
+# E10 - get teams
 @app.get("/fantasy-teams")
 def get_my_fantasy_teams(token: str = Header(None)):
+    check_role(token, [functions.USER])
     user_id = verify_token(token, "access")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired access token.")
@@ -226,6 +249,7 @@ def get_my_fantasy_teams(token: str = Header(None)):
 # E11 - Create contest
 @app.post("/contests", status_code=201)
 def create_contest(data: ContestRequest, token: str = Header(None)):
+    check_role(token, [functions.ORGANIZER])
     user_id = get_current_user(token)
     if not data.name.strip():
         raise HTTPException(status_code=422, detail="Contest name cannot be empty")
@@ -240,6 +264,7 @@ def create_contest(data: ContestRequest, token: str = Header(None)):
 # E12 - Join contest
 @app.post("/contests/{contest_id}/join", status_code=201)
 def join_contest(contest_id: int,data: JoinContestRequest,token: str = Header(None)):
+    check_role(token, [functions.USER])
     user_id = get_current_user(token)
     result = functions.join_contest(contest_id,data.fantasy_team_id,user_id)
     if result == None:
@@ -255,6 +280,7 @@ def join_contest(contest_id: int,data: JoinContestRequest,token: str = Header(No
 # E13 - Publish player statistics
 @app.post("/matches/{match_id}/stats")
 def publish_stats(match_id: int,data: PlayerStatsRequest,token: str = Header(None)):
+    check_role(token, [functions.ORGANIZER])
     user_id = get_current_user(token)
     stats = [data.runs,data.fours,data.sixes,data.wickets,data.catches,data.run_outs,data.stumpings]
     if any(value < 0 for value in stats):
@@ -277,13 +303,15 @@ def get_contest_leaderboard(contest_id: int):
 # E15 - Get fantasy points history
 @app.get("/fantasy-points/history")
 def get_points_history(token: str = Header(None)):
+    check_role(token, [functions.USER])
     user_id = get_current_user(token)
     result = functions.get_fantasy_points_history(user_id)
     return result
 
 # E16 - Post Matches
 @app.post("/matches")
-def create_match(data: MatchRequest):
+def create_match(data: MatchRequest, token: str = Header(None)):
+    check_role(token, [functions.ORGANIZER])
     result = functions.create_match(data.tournament_id,data.team1,data.team2,data.match_date)
     if result is False:
         raise HTTPException(status_code=400,detail="Invalid tournament or teams")
