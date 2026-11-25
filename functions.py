@@ -203,103 +203,147 @@ def verify_login(email, password):
         "token_type": "bearer"
     }
 
+# E1 - Create an organizer account
+def create_organizer_account(username, email, password):
+    session = Session(engine)
 
-# E6 - Get all tournaments
-def get_all_tournaments():
-    session = Session(engine)
-    tournaments = session.query(Tournament).all()
-    results = []
-    for tournament in tournaments:
-        response = {
-            "id": tournament.id,
-            "name": tournament.name
-        }
-        results.append(response)
-    session.close()
-    return results
-# E7 - Create a fantasy team
-def create_fantasy_team(user_id, tournament_id, team_name):
-    session = Session(engine)
-    tournament = session.query(Tournament).filter_by(id=tournament_id).first()
-    if tournament is None:
+    existing_user = session.query(User).filter_by(email=email).first()
+
+    if existing_user is not None:
         session.close()
-        return None
-    new_team = FantasyTeam(name=team_name,tournament_id=tournament_id,user_id=user_id)
-    session.add(new_team)
+        return False
+
+    existing_username = session.query(User).filter_by(username=username).first()
+
+    if existing_username is not None:
+        session.close()
+        return False
+
+    new_user = User(
+        username=username,
+        email=email,
+        password=ph.hash(password),
+        role="organizer"
+    )
+
+    session.add(new_user)
     session.commit()
+
     response = {
-        "id": new_team.id,
-        "name": new_team.name,
-        "tournament_id": new_team.tournament_id,
-        "user_id": new_team.user_id
+        "id": new_user.id,
+        "username": new_user.username,
+        "email": new_user.email,
+        "role": new_user.role
     }
+
     session.close()
     return response
 
-# E8 - Add a player to a fantasy team
-def add_player_to_fantasy_team(team_id, player_id, user_id):
+
+# E2 - Add a cricket player to the platform
+def add_cricket_player(name, team, role):
     session = Session(engine)
-    team = session.query(FantasyTeam).filter_by(id=team_id,user_id=user_id).first()
-    if team is None:
-        session.close()
-    player = session.query(Player).filter_by(id=player_id).first()
-    if player is None:
-        session.close()
-    existing_player = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=team_id,player_id=player_id).first()
-    if existing_player is not None:
-        session.close()
-    new_player = FantasyTeamPlayer(fantasy_team_id=team_id,player_id=player_id)
+
+    new_player = Player(
+        name=name,
+        team=team,
+        role=role
+    )
+
     session.add(new_player)
     session.commit()
+
     response = {
         "id": new_player.id,
-        "fantasy_team_id": new_player.fantasy_team_id,
-        "player_id": new_player.player_id
+        "name": new_player.name,
+        "team": new_player.team,
+        "role": new_player.role
     }
+
     session.close()
     return response
 
-# E9 - Remove a player from a fantasy team
-def remove_player_from_fantasy_team(team_id, player_id, user_id):
-    session = Session(engine)
-    team = session.query(FantasyTeam).filter_by(id=team_id,user_id=user_id).first()
-    if team is None:
-        session.close()
-    player = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=team_id,player_id=player_id).first()
-    if player is None:
-        session.close()
-    session.delete(player)
-    session.commit()
-    response = {
-        "fantasy_team_id": team_id,
-        "player_id": player_id
-    }
-    session.close()
-    return response
 
-# E10 - Get logged-in user's fantasy teams
-def get_my_fantasy_teams(user_id):
+# E3 - Get all available cricket players
+def get_all_cricket_players():
     session = Session(engine)
-    teams = session.query(FantasyTeam).filter_by(user_id=user_id).all()
+
+    players = session.query(Player).all()
+
     results = []
-    for team in teams:
-        team_players = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=team.id).all()
-        players = []
-        for item in team_players:
-            player = session.query(Player).filter_by(id=item.player_id).first()
-            if player is not None:
-                players.append({
-                    "player_id": player.id,
-                    "player_name": player.name
-                })
+
+    for player in players:
         results.append({
-            "id": team.id,
-            "team_name": team.name,
-            "tournament_id": team.tournament_id,
-            "user_id": team.user_id,
-            "players": players
+            "id": player.id,
+            "name": player.name,
+            "team": player.team,
+            "role": player.role
         })
 
     session.close()
     return results
+
+
+# E4 - Get details of a particular player
+def get_player_details(player_id):
+    session = Session(engine)
+
+    player = session.query(Player).filter_by(id=player_id).first()
+
+    if player is None:
+        session.close()
+        return None
+
+    response = {
+        "id": player.id,
+        "name": player.name,
+        "team": player.team,
+        "role": player.role
+    }
+
+    session.close()
+    return response
+
+
+# E5 - Create a cricket tournament
+def create_tournament(name, start_date, end_date):
+    session = Session(engine)
+
+    new_tournament = Tournament(
+        name=name,
+        start_date=start_date,
+        end_date=end_date,
+        status="Upcoming"
+    )
+
+    session.add(new_tournament)
+    session.commit()
+
+    response = {
+        "id": new_tournament.id,
+        "name": new_tournament.name,
+        "start_date": new_tournament.start_date,
+        "end_date": new_tournament.end_date,
+        "status": new_tournament.status
+    }
+
+    session.close()
+    return response
+
+
+# Get user role
+def get_user_role(user_id):
+    session = Session(engine)
+
+    user = session.query(User).filter_by(id=user_id).first()
+
+    if user is None:
+        session.close()
+        return None
+
+    role = user.role
+
+    session.close()
+    return role
+
 
