@@ -22,6 +22,27 @@ app.add_middleware(
 
 # Request models
 
+
+class OrganizerRequest(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+
+
+class PlayerRequest(BaseModel):
+    name: str
+    country: str
+    team: str
+    role: str
+
+
+class TournamentRequest(BaseModel):
+    name: str
+    season: str
+    start_date: datetime
+    end_date: datetime
+
+
 class FantasyTeamData(BaseModel):
     team_name: str = Field(min_length=1)
 
@@ -77,10 +98,6 @@ class MatchRequest(BaseModel):
     match_date: datetime
 
 
-
-
-# Resolve the verifier dynamically so module type checkers do not require a
-# statically declared attribute on the functions module.
 def verify_token(token: str, token_type: str):
     verifier = getattr(functions, "verify_token", None)
     if not callable(verifier):
@@ -133,6 +150,41 @@ def refresh_token(data: RefreshRequest):
     new_access_token = functions.create_token(user_id,"access")
     return {"access_token": new_access_token,"token_type": "bearer"}
 
+
+# E1 - Create Organizer
+@app.post("/organizers")
+def create_organizer(data: OrganizerRequest):
+    result = functions.create_organizer(data.name,data.email,data.password)
+    if result is False:
+        raise HTTPException(status_code=400,detail="Email already exists")
+    return result
+
+# E2 - Add Player
+@app.post("/players")
+def add_player(data: PlayerRequest):
+    result = functions.add_player(data.name,data.country,data.team,data.role)
+    return result
+
+# E3 - Get All Players
+@app.get("/players")
+def get_all_players():
+    return functions.get_all_players()
+
+# E4 - Get Player By ID
+@app.get("/players/{player_id}")
+def get_player_by_id(player_id: int):
+    result = functions.get_player_by_id(player_id)
+    if result is False:
+        raise HTTPException(status_code=404,detail="Player not found")
+    return result
+
+# E5 - Create Tournament
+@app.post("/tournaments")
+def create_tournament(data: TournamentRequest):
+    result = functions.create_tournament(data.name,data.season,data.start_date,data.end_date,1)
+    return result
+
+
 @app.get("/tournaments")
 def get_all_tournaments():
     return functions.get_all_tournaments()
@@ -145,7 +197,7 @@ def create_fantasy_team(data: FantasyTeamData, token: str = Header(None)):
     return functions.create_fantasy_team(user_id, data.team_name)
 
 @app.post("/fantasy-team/player")
-def add_player(data: AddPlayerData, token: str = Header(None)):
+def add_player_to_fantasy_team(data: AddPlayerData, token: str = Header(None)):
     user_id = verify_token(token, "access")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired access token.")

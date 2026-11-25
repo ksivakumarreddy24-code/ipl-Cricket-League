@@ -203,14 +203,109 @@ def verify_login(email, password):
         "token_type": "bearer"
     }
 
-# E6
+
+# E1 - Create organizer
+def create_organizer(name, email, password):
+    session = Session(engine)
+    user_exists = session.query(User).filter_by(email=email).first()
+    if user_exists is not None:
+        session.close()
+        return False
+
+    new_organizer = User(name=name,email=email,password=hash_password(password),role="organizer")
+    session.add(new_organizer)
+    session.commit()
+    response = {
+        "id": new_organizer.id,
+        "name": new_organizer.name,
+        "email": new_organizer.email,
+        "role": new_organizer.role
+    }
+    session.close()
+    return response
+
+
+# E2 - Add player
+def add_player(name, country, team, role):
+    session = Session(engine)
+    new_player = Player(name=name,country=country,team=team,role=role)
+    session.add(new_player)
+    session.commit()
+    response = {
+        "id": new_player.id,
+        "name": new_player.name,
+        "country": new_player.country,
+        "team": new_player.team,
+        "role": new_player.role
+    }
+    session.close()
+    return response
+
+
+# E3 - Get all players
+def get_all_players():
+    session = Session(engine)
+    players = session.query(Player).all()
+    results = []
+    for player in players:
+        results.append({
+            "id": player.id,
+            "name": player.name,
+            "country": player.country,
+            "team": player.team,
+            "role": player.role
+        })
+    session.close()
+    return results
+
+
+# E4 - Get player by ID
+def get_player_by_id(player_id):
+    session = Session(engine)
+    player = session.query(Player).filter_by(id=player_id).first()
+    if player is None:
+        session.close()
+        return False
+    response = {
+        "id": player.id,
+        "name": player.name,
+        "country": player.country,
+        "team": player.team,
+        "role": player.role
+    }
+    session.close()
+    return response
+
+
+# E5 - Create tournament
+def create_tournament(name, season, start_date, end_date, user_id):
+    session = Session(engine)
+    new_tournament = Tournament(
+        name=name,
+        season=season,
+        start_date=start_date,
+        end_date=end_date,
+        created_by=user_id
+    )
+    session.add(new_tournament)
+    session.commit()
+    response = {
+        "id": new_tournament.id,
+        "name": new_tournament.name,
+        "season": new_tournament.season,
+        "start_date": new_tournament.start_date,
+        "end_date": new_tournament.end_date,
+        "created_by": new_tournament.created_by
+    }
+    session.close()
+    return response
+
+
+# E6 - Get All Tournaments
 def get_all_tournaments():
     session = Session(engine)
-
     tournaments = session.query(Tournament).all()
-
     response = []
-
     for tournament in tournaments:
         response.append({
             "id": tournament.id,
@@ -220,139 +315,87 @@ def get_all_tournaments():
             "end_date": tournament.end_date,
             "created_by": tournament.created_by
         })
-
     session.close()
     return response
 
 
-# E7
+# E7 - Create Fantasy Teams
 def create_fantasy_team(user_id, team_name):
     session = Session(engine)
-
-    team = FantasyTeam(
-        user_id=user_id,
-        name=team_name
-    )
-
+    team = FantasyTeam(user_id=user_id,name=team_name)
     session.add(team)
     session.commit()
-
     response = {
         "id": team.id,
         "user_id": team.user_id,
         "name": team.name,
         "created_at": team.created_at
     }
-
     session.close()
     return response
 
 
-# E8
+# E8 - Adding A player
 def add_player_to_team(user_id, fantasy_team_id, player_id):
     session = Session(engine)
-
-    team = session.query(FantasyTeam).filter_by(
-        id=fantasy_team_id,
-        user_id=user_id
-    ).first()
-
+    team = session.query(FantasyTeam).filter_by(id=fantasy_team_id,user_id=user_id).first()
     if team is None:
         session.close()
         return False
-
     player = session.query(Player).filter_by(id=player_id).first()
-
     if player is None:
         session.close()
         return False
-
-    player_exists = session.query(FantasyTeamPlayer).filter_by(
-        fantasy_team_id=fantasy_team_id,
-        player_id=player_id
-    ).first()
-
+    player_exists = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=fantasy_team_id,player_id=player_id).first()
     if player_exists is not None:
         session.close()
         return False
-
-    total_players = session.query(FantasyTeamPlayer).filter_by(
-        fantasy_team_id=fantasy_team_id
-    ).count()
-
+    total_players = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=fantasy_team_id).count()
     if total_players >= 11:
         session.close()
         return False
-
-    fantasy_player = FantasyTeamPlayer(
-        fantasy_team_id=fantasy_team_id,
-        player_id=player_id
-    )
-
+    fantasy_player = FantasyTeamPlayer(fantasy_team_id=fantasy_team_id,player_id=player_id)
     session.add(fantasy_player)
     session.commit()
-
     response = {
         "id": fantasy_player.id,
         "fantasy_team_id": fantasy_player.fantasy_team_id,
         "player_id": fantasy_player.player_id
     }
-
     session.close()
     return response
 
 
-# E9
+# E9 - Remove A player
 def remove_player_from_team(user_id, fantasy_team_id, player_id):
     session = Session(engine)
-
-    team = session.query(FantasyTeam).filter_by(
-        id=fantasy_team_id,
-        user_id=user_id
-    ).first()
-
+    team = session.query(FantasyTeam).filter_by(id=fantasy_team_id,user_id=user_id).first()
     if team is None:
         session.close()
         return False
-
-    fantasy_player = session.query(FantasyTeamPlayer).filter_by(
-        fantasy_team_id=fantasy_team_id,
-        player_id=player_id
-    ).first()
-
+    fantasy_player = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=fantasy_team_id,player_id=player_id).first()
     if fantasy_player is None:
         session.close()
         return False
-
     session.delete(fantasy_player)
     session.commit()
-
     session.close()
     return True
 
 
-# E10
+# E10 - Get Fantasy teams
 def get_user_fantasy_teams(user_id):
     session = Session(engine)
-
-    teams = session.query(FantasyTeam).filter_by(
-        user_id=user_id
-    ).all()
-
+    teams = session.query(FantasyTeam).filter_by(user_id=user_id).all()
     response = []
-
     for team in teams:
-        player_count = session.query(FantasyTeamPlayer).filter_by(
-            fantasy_team_id=team.id
-        ).count()
-
+        player_count = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=team.id).count()
         response.append({
             "id": team.id,
             "name": team.name,
             "players": player_count,
             "created_at": team.created_at
         })
-
     session.close()
     return response
 
