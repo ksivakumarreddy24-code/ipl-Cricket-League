@@ -4,11 +4,8 @@ from functions import engine, Tournament, FantasyTeam, FantasyTeamPlayer, Player
 # E6
 def get_all_tournaments():
     session = Session(engine)
-
     tournaments = session.query(Tournament).all()
-
     response = []
-
     for tournament in tournaments:
         response.append({
             "id": tournament.id,
@@ -18,7 +15,6 @@ def get_all_tournaments():
             "end_date": tournament.end_date,
             "created_by": tournament.created_by
         })
-
     session.close()
     return response
 
@@ -26,30 +22,21 @@ def get_all_tournaments():
 # E7
 def create_fantasy_team(user_id, team_name):
     session = Session(engine)
-
-    team = FantasyTeam(
-        user_id=user_id,
-        name=team_name
-    )
-
+    team = FantasyTeam(user_id=user_id,name=team_name)
     session.add(team)
     session.commit()
-
     response = {
         "id": team.id,
         "user_id": team.user_id,
         "name": team.name,
         "created_at": team.created_at
     }
-
     session.close()
     return response
-
 
 # E8
 def add_player_to_team(user_id, fantasy_team_id, player_id):
     session = Session(engine)
-
     team = session.query(FantasyTeam).filter_by(
         id=fantasy_team_id,
         user_id=user_id
