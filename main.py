@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field
-
+from datetime import datetime
 import functions
 
 app = FastAPI()
@@ -68,6 +68,14 @@ class PlayerStatsRequest(BaseModel):
     catches: int
     run_outs: int
     stumpings: int
+
+
+class MatchRequest(BaseModel):
+    tournament_id: int
+    team1: str
+    team2: str
+    match_date: datetime
+
 
 
 
@@ -220,3 +228,16 @@ def get_points_history(token: str = Header(None)):
     user_id = get_current_user(token)
     result = functions.get_fantasy_points_history(user_id)
     return result
+
+# E16 - Post Matches
+@app.post("/matches")
+def create_match(data: MatchRequest):
+    result = functions.create_match(data.tournament_id,data.team1,data.team2,data.match_date)
+    if result is False:
+        raise HTTPException(status_code=400,detail="Invalid tournament or teams")
+    return result
+
+# E17 - Get all Matches
+@app.get("/matches")
+def get_all_matches():
+    return functions.get_all_matches()

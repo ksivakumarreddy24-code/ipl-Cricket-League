@@ -531,3 +531,45 @@ def get_fantasy_points_history(user_id):
                 })
     session.close()
     return results
+
+# E16 - Create Matches
+def create_match(tournament_id, team1, team2, match_date):
+    session = Session(engine)
+    tournament = session.query(Tournament).filter_by(id=tournament_id).first()
+    if tournament is None:
+        session.close()
+        return False
+    if team1 == team2:
+        session.close()
+        return False
+    new_match = Match(tournament_id=tournament_id,team1=team1,team2=team2,match_date=match_date)
+    session.add(new_match)
+    session.commit()
+    response = {
+        "id": new_match.id,
+        "tournament_id": new_match.tournament_id,
+        "team1": new_match.team1,
+        "team2": new_match.team2,
+        "match_date": new_match.match_date,
+        "status": new_match.status
+    }
+    session.close()
+    return response
+
+# E17 - get all matches
+def get_all_matches():
+    session = Session(engine)
+    matches = session.query(Match).all()
+    response = []
+    for match in matches:
+        response.append({
+            "id": match.id,
+            "tournament_id": match.tournament_id,
+            "team1": match.team1,
+            "team2": match.team2,
+            "match_date": match.match_date,
+            "status": match.status
+        })
+    session.close()
+    return response
+
