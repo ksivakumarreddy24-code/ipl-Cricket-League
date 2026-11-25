@@ -60,7 +60,62 @@ class Match(Base):
     match_date = Column(DateTime, nullable=False)
     status = Column(String, default="upcoming")
 
-#
+# 5. Fantasy teams table
+class FantasyTeam(Base):
+    __tablename__ = "fantasy_teams"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# 6. Fantasy team players table
+class FantasyTeamPlayer(Base):
+    __tablename__ = "fantasy_team_players"
+    id = Column(Integer, primary_key=True, index=True)
+    fantasy_team_id = Column(Integer, ForeignKey("fantasy_teams.id"))
+    player_id = Column(Integer, ForeignKey("players.id"))
+
+# 7. Contests table
+class Contest(Base):
+    __tablename__ = "contests"
+    id = Column(Integer, primary_key=True, index=True)
+    match_id = Column(Integer, ForeignKey("matches.id"))
+    name = Column(String, nullable=False)
+    entry_fee = Column(Integer, default=0)
+    max_entries = Column(Integer, nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+# 8. Contest entries table
+class ContestEntry(Base):
+    __tablename__ = "contest_entries"
+    id = Column(Integer, primary_key=True, index=True)
+    contest_id = Column(Integer, ForeignKey("contests.id"))
+    fantasy_team_id = Column(Integer, ForeignKey("fantasy_teams.id"))
+    joined_at = Column(DateTime, default=datetime.now)
+
+# 9. Player match statistics table
+class PlayerMatchStat(Base):
+    __tablename__ = "player_match_stats"
+    id = Column(Integer, primary_key=True, index=True)
+    match_id = Column(Integer, ForeignKey("matches.id"))
+    player_id = Column(Integer, ForeignKey("players.id"))
+    runs = Column(Integer, default=0)
+    fours = Column(Integer, default=0)
+    sixes = Column(Integer, default=0)
+    wickets = Column(Integer, default=0)
+    catches = Column(Integer, default=0)
+    run_outs = Column(Integer, default=0)
+    stumpings = Column(Integer, default=0)
+
+# 10. Fantasy points history table
+class FantasyPointsHistory(Base):
+    __tablename__ = "fantasy_points_history"
+    id = Column(Integer, primary_key=True, index=True)
+    contest_entry_id = Column(Integer, ForeignKey("contest_entries.id"))
+    match_id = Column(Integer, ForeignKey("matches.id"))
+    points = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.now)
 
 Base.metadata.create_all(engine)
 
@@ -147,3 +202,104 @@ def verify_login(email, password):
         "refresh_token": refresh_token,
         "token_type": "bearer"
     }
+
+
+# E6 - Get all tournaments
+def get_all_tournaments():
+    session = Session(engine)
+    tournaments = session.query(Tournament).all()
+    results = []
+    for tournament in tournaments:
+        response = {
+            "id": tournament.id,
+            "name": tournament.name
+        }
+        results.append(response)
+    session.close()
+    return results
+# E7 - Create a fantasy team
+def create_fantasy_team(user_id, tournament_id, team_name):
+    session = Session(engine)
+    tournament = session.query(Tournament).filter_by(id=tournament_id).first()
+    if tournament is None:
+        session.close()
+        return None
+    new_team = FantasyTeam(name=team_name,tournament_id=tournament_id,user_id=user_id)
+    session.add(new_team)
+    session.commit()
+    response = {
+        "id": new_team.id,
+        "name": new_team.name,
+        "tournament_id": new_team.tournament_id,
+        "user_id": new_team.user_id
+    }
+    session.close()
+    return response
+
+# E8 - Add a player to a fantasy team
+def add_player_to_fantasy_team(team_id, player_id, user_id):
+    session = Session(engine)
+    team = session.query(FantasyTeam).filter_by(id=team_id,user_id=user_id).first()
+    if team is None:
+        session.close()
+    player = session.query(Player).filter_by(id=player_id).first()
+    if player is None:
+        session.close()
+    existing_player = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=team_id,player_id=player_id).first()
+    if existing_player is not None:
+        session.close()
+    new_player = FantasyTeamPlayer(fantasy_team_id=team_id,player_id=player_id)
+    session.add(new_player)
+    session.commit()
+    response = {
+        "id": new_player.id,
+        "fantasy_team_id": new_player.fantasy_team_id,
+        "player_id": new_player.player_id
+    }
+    session.close()
+    return response
+
+# E9 - Remove a player from a fantasy team
+def remove_player_from_fantasy_team(team_id, player_id, user_id):
+    session = Session(engine)
+    team = session.query(FantasyTeam).filter_by(id=team_id,user_id=user_id).first()
+    if team is None:
+        session.close()
+    player = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=team_id,player_id=player_id).first()
+    if player is None:
+        session.close()
+    session.delete(player)
+    session.commit()
+    response = {
+        "fantasy_team_id": team_id,
+        "player_id": player_id
+    }
+    session.close()
+    return response
+
+# E10 - Get logged-in user's fantasy teams
+def get_my_fantasy_teams(user_id):
+    session = Session(engine)
+    teams = session.query(FantasyTeam).filter_by(user_id=user_id).all()
+    results = []
+    for team in teams:
+        team_players = session.query(FantasyTeamPlayer).filter_by(fantasy_team_id=team.id).all()
+        players = []
+        for item in team_players:
+            player = session.query(Player).filter_by(id=item.player_id).first()
+            if player is not None:
+                players.append({
+                    "player_id": player.id,
+                    "player_name": player.name
+                })
+        results.append({
+            "id": team.id,
+            "team_name": team.name,
+            "tournament_id": team.tournament_id,
+            "user_id": team.user_id,
+            "players": players
+        })
+
+    session.close()
+    return results
+

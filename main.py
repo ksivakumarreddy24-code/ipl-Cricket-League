@@ -17,9 +17,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
-<<<<<<< HEAD
-)
-=======
 )
 
 
@@ -49,6 +46,14 @@ class ContestRequest(BaseModel):
 
 class JoinContestRequest(BaseModel):
     fantasy_team_id: int
+    
+class FantasyTeamRequest(BaseModel):
+    tournament_id: int
+    name: str
+
+
+class AddPlayerRequest(BaseModel):
+    player_id: int
 
 
 class PlayerStatsRequest(BaseModel):
@@ -116,61 +121,67 @@ def refresh_token(data: RefreshRequest):
     new_access_token = functions.create_token(user_id,"access")
     return {"access_token": new_access_token,"token_type": "bearer"}
 
-# E11 - Create contest
-@app.post("/contests", status_code=201)
-def create_contest(data: ContestRequest, token: str = Header(None)):
+
+# E6 - Get all tournaments
+@app.get("/tournaments")
+def get_all_tournaments():
+    result = functions.get_all_tournaments()
+    return result
+
+# E7 - Create a fantasy team
+@app.post("/fantasy-teams", status_code=201)
+def create_fantasy_team(data: FantasyTeamRequest, token: str = Header(None)):
     user_id = get_current_user(token)
+
     if not data.name.strip():
-        raise HTTPException(status_code=422, detail="Contest name cannot be empty")
-    if data.entry_fee < 0 or data.max_entries <= 0:
-        raise HTTPException(status_code=422, detail="Invalid contest values")
-    result = functions.create_contest(data.match_id,data.name,data.entry_fee,data.max_entries,user_id)
+        raise HTTPException(status_code=422, detail="Team name cannot be empty")
+
+    result = functions.create_fantasy_team(user_id, data.tournament_id, data.name)
 
     if result == None:
-        raise HTTPException(status_code=404, detail="Match not found")
+        raise HTTPException(status_code=404, detail="Tournament not found")
+
     return result
 
-# E12 - Join contest
-@app.post("/contests/{contest_id}/join", status_code=201)
-def join_contest(contest_id: int,data: JoinContestRequest,token: str = Header(None)):
+# E8 - Add a player to a fantasy team
+@app.post("/fantasy-teams/{team_id}/players", status_code=201)
+def add_player_to_fantasy_team(team_id: int, data: AddPlayerRequest, token: str = Header(None)):
     user_id = get_current_user(token)
-    result = functions.join_contest(contest_id,data.fantasy_team_id,user_id)
-    if result == None:
-        raise HTTPException(status_code=404, detail="Contest not found")
-    if result == None:
+
+    result = functions.add_player_to_fantasy_team(team_id, data.player_id, user_id)
+
+    if result == "team_not_found":
         raise HTTPException(status_code=404, detail="Fantasy team not found")
-    if result == "already_joined":
-        raise HTTPException(status_code=409, detail="Fantasy team already joined")
-    if result == "contest_full":
-        raise HTTPException(status_code=400, detail="Contest is full")
-    return result
 
-# E13 - Publish player statistics
-@app.post("/matches/{match_id}/stats")
-def publish_stats(match_id: int,data: PlayerStatsRequest,token: str = Header(None)):
-    user_id = get_current_user(token)
-    stats = [data.runs,data.fours,data.sixes,data.wickets,data.catches,data.run_outs,data.stumpings]
-    if any(value < 0 for value in stats):
-        raise HTTPException(status_code=422,detail="Statistics cannot be negative")
-    result = functions.publish_player_stats(match_id,data.player_id,data.runs,data.fours,data.sixes,data.wickets,data.catches,data.run_outs,data.stumpings)
-    if result == None:
-        raise HTTPException(status_code=404, detail="Match not found")
-    if result == None:
+    if result == "player_not_found":
         raise HTTPException(status_code=404, detail="Player not found")
+
+    if result == "already_added":
+        raise HTTPException(status_code=409, detail="Player already added to fantasy team")
+
     return result
 
-# E14 - Get contest leaderboard
-@app.get("/contests/{contest_id}/leaderboard")
-def get_contest_leaderboard(contest_id: int):
-    result = functions.get_leaderboard(contest_id)
-    if result is False:
-        raise HTTPException(status_code=404, detail="Contest not found")
-    return result
-
-# E15 - Get fantasy points history
-@app.get("/fantasy-points/history")
-def get_points_history(token: str = Header(None)):
+# E9 - Remove a player from a fantasy team
+@app.delete("/fantasy-teams/{team_id}/players/{player_id}")
+def remove_player_from_fantasy_team(team_id: int, player_id: int, token: str = Header(None)):
     user_id = get_current_user(token)
-    result = functions.get_fantasy_points_history(user_id)
+
+    result = functions.remove_player_from_fantasy_team(team_id, player_id, user_id)
+
+    if result == "team_not_found":
+        raise HTTPException(status_code=404, detail="Fantasy team not found")
+
+    if result == "player_not_found":
+        raise HTTPException(status_code=404, detail="Player not found in fantasy team")
+
     return result
->>>>>>> 12941f9ef1d829f00b89a1b5643fa1215f54564d
+
+# E10 - Get logged-in user's fantasy teams
+@app.get("/fantasy-teams/my-teams")
+def get_my_fantasy_teams(token: str = Header(None)):
+    user_id = get_current_user(token)
+
+    result = functions.get_my_fantasy_teams(user_id)
+
+    return result
+
