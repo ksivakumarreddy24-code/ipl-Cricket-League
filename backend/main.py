@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel, Field
 import functions
 app = FastAPI()
+
 class FantasyTeamData(BaseModel):
     team_name: str = Field(min_length=1)
 
