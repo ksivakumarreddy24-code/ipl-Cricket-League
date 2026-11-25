@@ -135,32 +135,25 @@ def verify_password(password, hashed_password):
 
 # Register user
 def register_user(username, email, password):
-
     session = Session(engine)
-
     user_exists = session.query(User).filter_by(email=email).first()
-
     if user_exists is not None:
         session.close()
         return False
-
     new_user = User(
         username=username,
         email=email,
         hashed_password=hash_password(password),
         role="user"
     )
-
     session.add(new_user)
     session.commit()
-
     response = {
         "id": new_user.id,
         "username": new_user.username,
         "email": new_user.email,
         "role": new_user.role
     }
-
     session.close()
     return response
 
@@ -178,25 +171,18 @@ def create_token(user_id, token_type):
 
 # Verify login
 def verify_login(email, password):
-
     session = Session(engine)
-
     user = session.query(User).filter_by(email=email).first()
-
     if user is None:
         session.close()
         return False
-
     if verify_password(password, user.hashed_password) is False:
         session.close()
         return False
-
     user_id = user.id
     session.close()
-
     access_token = create_token(user_id, "access")
     refresh_token = create_token(user_id, "refresh")
-
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -217,7 +203,6 @@ def create_organizer_account(username, email, password):
     new_user = User(username=username,email=email,password=ph.hash(password),role="organizer")
     session.add(new_user)
     session.commit()
-
     response = {
         "id": new_user.id,
         "username": new_user.username,
@@ -240,7 +225,6 @@ def add_cricket_player(name, team, role):
         "team": new_player.team,
         "role": new_player.role
     }
-
     session.close()
     return response
 
