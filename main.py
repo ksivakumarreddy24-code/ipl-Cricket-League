@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 import functions
 
@@ -21,6 +21,17 @@ app.add_middleware(
 
 
 # Request models
+
+class FantasyTeamData(BaseModel):
+    team_name: str = Field(min_length=1)
+
+class AddPlayerData(BaseModel):
+    fantasy_team_id: int
+    player_id: int
+
+class RemovePlayerData(BaseModel):
+    fantasy_team_id: int
+    player_id: int
 
 class RegisterRequest(BaseModel):
     username: str
@@ -57,6 +68,7 @@ class PlayerStatsRequest(BaseModel):
     catches: int
     run_outs: int
     stumpings: int
+
 
 
 # Resolve the verifier dynamically so module type checkers do not require a
@@ -112,6 +124,44 @@ def refresh_token(data: RefreshRequest):
         raise HTTPException(status_code=401,detail="Invalid or expired refresh token")
     new_access_token = functions.create_token(user_id,"access")
     return {"access_token": new_access_token,"token_type": "bearer"}
+
+@app.get("/tournaments")
+def get_all_tournaments():
+    return functions.get_all_tournaments()
+
+@app.post("/fantasy-team")
+def create_fantasy_team(data: FantasyTeamData, token: str = Header(None)):
+    user_id = verify_token(token, "access")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired access token.")
+    return functions.create_fantasy_team(user_id, data.team_name)
+
+@app.post("/fantasy-team/player")
+def add_player(data: AddPlayerData, token: str = Header(None)):
+    user_id = verify_token(token, "access")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired access token.")
+    response = functions.add_player_to_team(user_id, data.fantasy_team_id, data.player_id)
+    if not response:
+        raise HTTPException(status_code=400, detail="Unable to add player.")
+    return response
+
+@app.delete("/fantasy-team/player")
+def remove_player(data: RemovePlayerData, token: str = Header(None)):
+    user_id = verify_token(token, "access")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired access token.")
+    response = functions.remove_player_from_team(user_id, data.fantasy_team_id, data.player_id)
+    if not response:
+        raise HTTPException(status_code=404, detail="Player not found.")
+    return {"message": "Player removed successfully"}
+
+@app.get("/fantasy-teams")
+def get_my_fantasy_teams(token: str = Header(None)):
+    user_id = verify_token(token, "access")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired access token.")
+    return functions.get_user_fantasy_teams(user_id)
 
 # E11 - Create contest
 @app.post("/contests", status_code=201)
