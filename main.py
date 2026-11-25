@@ -1,5 +1,5 @@
 from datetime import date
-from fastapi import FastAPI, HTTPException, Header,datetime
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 
