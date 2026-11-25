@@ -144,15 +144,11 @@ def refresh_token(data: RefreshRequest):
 def create_organizer(data: OrganizerRequest, token: str = Header(None)):
     user_id = get_current_user(token)
     check_role(user_id, "admin")
-
     if not data.username.strip() or not data.password.strip():
         raise HTTPException(status_code=422, detail="Username and password cannot be empty")
-
     result = functions.create_organizer_account(data.username, data.email, data.password)
-
     if result == False:
         raise HTTPException(status_code=409, detail="Username or email already exists")
-
     return result
 
 
@@ -161,12 +157,9 @@ def create_organizer(data: OrganizerRequest, token: str = Header(None)):
 def add_cricket_player(data: CricketPlayerRequest, token: str = Header(None)):
     user_id = get_current_user(token)
     check_role(user_id, "organizer")
-
     if not data.name.strip() or not data.team.strip() or not data.role.strip():
         raise HTTPException(status_code=422, detail="Player details cannot be empty")
-
     result = functions.add_cricket_player(data.name, data.team, data.role)
-
     return result
 
 
@@ -181,10 +174,8 @@ def get_all_cricket_players():
 @app.get("/players/{player_id}")
 def get_player_details(player_id: int):
     result = functions.get_player_details(player_id)
-
     if result == None:
         raise HTTPException(status_code=404, detail="Player not found")
-
     return result
 
 
@@ -193,26 +184,19 @@ def get_player_details(player_id: int):
 def create_tournament(data: TournamentRequest, token: str = Header(None)):
     user_id = get_current_user(token)
     check_role(user_id, "organizer")
-
     if not data.name.strip():
         raise HTTPException(status_code=422, detail="Tournament name cannot be empty")
-
     if data.end_date < data.start_date:
         raise HTTPException(status_code=422, detail="End date cannot be before start date")
-
     result = functions.create_tournament(data.name, data.start_date, data.end_date)
-
     return result
 
 def check_role(user_id: int, required_role: str):
     role = functions.get_user_role(user_id)
-
     if role is None:
         raise HTTPException(status_code=404, detail="User not found")
-
     if role.lower() != required_role.lower():
         raise HTTPException(status_code=403, detail="Access denied")
-
     return True
 
 

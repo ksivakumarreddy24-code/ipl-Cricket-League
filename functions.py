@@ -206,26 +206,15 @@ def verify_login(email, password):
 # E1 - Create an organizer account
 def create_organizer_account(username, email, password):
     session = Session(engine)
-
     existing_user = session.query(User).filter_by(email=email).first()
-
     if existing_user is not None:
         session.close()
         return False
-
     existing_username = session.query(User).filter_by(username=username).first()
-
     if existing_username is not None:
         session.close()
         return False
-
-    new_user = User(
-        username=username,
-        email=email,
-        password=ph.hash(password),
-        role="organizer"
-    )
-
+    new_user = User(username=username,email=email,password=ph.hash(password),role="organizer")
     session.add(new_user)
     session.commit()
 
@@ -235,7 +224,6 @@ def create_organizer_account(username, email, password):
         "email": new_user.email,
         "role": new_user.role
     }
-
     session.close()
     return response
 
@@ -243,16 +231,9 @@ def create_organizer_account(username, email, password):
 # E2 - Add a cricket player to the platform
 def add_cricket_player(name, team, role):
     session = Session(engine)
-
-    new_player = Player(
-        name=name,
-        team=team,
-        role=role
-    )
-
+    new_player = Player(name=name,team=team,role=role)
     session.add(new_player)
     session.commit()
-
     response = {
         "id": new_player.id,
         "name": new_player.name,
@@ -267,11 +248,8 @@ def add_cricket_player(name, team, role):
 # E3 - Get all available cricket players
 def get_all_cricket_players():
     session = Session(engine)
-
     players = session.query(Player).all()
-
     results = []
-
     for player in players:
         results.append({
             "id": player.id,
@@ -279,7 +257,6 @@ def get_all_cricket_players():
             "team": player.team,
             "role": player.role
         })
-
     session.close()
     return results
 
@@ -287,20 +264,16 @@ def get_all_cricket_players():
 # E4 - Get details of a particular player
 def get_player_details(player_id):
     session = Session(engine)
-
     player = session.query(Player).filter_by(id=player_id).first()
-
     if player is None:
         session.close()
         return None
-
     response = {
         "id": player.id,
         "name": player.name,
         "team": player.team,
         "role": player.role
     }
-
     session.close()
     return response
 
@@ -308,17 +281,9 @@ def get_player_details(player_id):
 # E5 - Create a cricket tournament
 def create_tournament(name, start_date, end_date):
     session = Session(engine)
-
-    new_tournament = Tournament(
-        name=name,
-        start_date=start_date,
-        end_date=end_date,
-        status="Upcoming"
-    )
-
+    new_tournament = Tournament(name=name,start_date=start_date,end_date=end_date,status="Upcoming")
     session.add(new_tournament)
     session.commit()
-
     response = {
         "id": new_tournament.id,
         "name": new_tournament.name,
@@ -326,7 +291,6 @@ def create_tournament(name, start_date, end_date):
         "end_date": new_tournament.end_date,
         "status": new_tournament.status
     }
-
     session.close()
     return response
 
@@ -334,15 +298,11 @@ def create_tournament(name, start_date, end_date):
 # Get user role
 def get_user_role(user_id):
     session = Session(engine)
-
     user = session.query(User).filter_by(id=user_id).first()
-
     if user is None:
         session.close()
         return None
-
     role = user.role
-
     session.close()
     return role
 
