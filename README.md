@@ -99,7 +99,7 @@ Update your own row at every check-in.
 Fill in the method and path from your PRD's endpoint table. Status: ✅ done · 🟡 in progress · ⬜ not started
 
 | # | Method + path | Built | Rules checked in /docs | Who |
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 | E1 | post/organizers | ✅ | ✅ | Aditya |
 | E2 | post/players | ✅ | ✅ | Aditya |
 | E3 | get("/players | ✅ | ✅ | Aditya  |
