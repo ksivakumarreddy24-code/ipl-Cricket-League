@@ -125,8 +125,4 @@ Fill in the method and path from your PRD's endpoint table. Status: ✅ done · 
 
 
 
-    ├── .venv/
-    ├── functions.py
-    ├── hostel_laundry.db
-    └── main.py
-```                
+                   
