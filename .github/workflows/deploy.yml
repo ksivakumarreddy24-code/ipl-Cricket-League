@@ -34,3 +34,20 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/ipl-cricket-league:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/ipl-cricket-league:${{ github.sha }}
+            
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull sivareddy24/ipl-cricket-league:latest
+            sudo docker rm -f ipl-app || true
+            sudo docker run -d -p 8001:8001 --name ipl-app sivareddy24/ipl-cricket-league:latest
+            sudo docker image prune -f
+
