@@ -197,7 +197,7 @@ def verify_login(email, password):
     user = session.query(User).filter_by(email=email).first()
     if user is None:
         session.close()
-        return False
+        return False 
     if verify_password(password, user.password) is False:
 
         session.close()
@@ -209,7 +209,6 @@ def verify_login(email, password):
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer"
     }
 
 

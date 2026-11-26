@@ -122,7 +122,7 @@ def check_role(token: str, allowed_roles: list):
     if role is False:
         raise HTTPException(status_code=401,detail="User not found")
     if role not in allowed_roles:
-        raise HTTPException(status_code=403,detail="You don't have permission to perform this action")
+        raise HTTPException(status_code=403,detail="forbidden")
     return user_id
 
 
@@ -256,7 +256,6 @@ def create_contest(data: ContestRequest, token: str = Header(None)):
     if data.entry_fee < 0 or data.max_entries <= 0:
         raise HTTPException(status_code=422, detail="Invalid contest values")
     result = functions.create_contest(data.match_id,data.name,data.entry_fee,data.max_entries,user_id)
-
     if result == None:
         raise HTTPException(status_code=404, detail="Match not found")
     return result
