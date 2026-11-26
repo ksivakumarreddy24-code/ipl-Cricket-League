@@ -175,7 +175,7 @@ def create_organizer(data: OrganizerRequest, token: str = Header(None)):
     return result
 
 # E2 - Add Player
-@app.post("/bestplayer")
+@app.post("/addplayer")
 def add_player(data: PlayerRequest, token: str = Header(None)):
     check_role(token, [functions.ORGANIZER])
     result = functions.add_player(data.name,data.country,data.team,data.role)
