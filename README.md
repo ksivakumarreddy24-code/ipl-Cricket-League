@@ -116,13 +116,15 @@ Fill in the method and path from your PRD's endpoint table. Status: ✅ done · 
 | E14 |  | ✅ | ✅ | ⬜ |   |
 | E15 | | ✅ | ✅ | ⬜ |   |
 
+## Datebase Tables
 
-## File Structure 
+| # | Table | Columns |
+| --- | --- | --- |
+| 1 | User | |
+| 2 | player |  |
 
-```text
-ipl/
-└── backend/
-    ├── __pycache__/
+
+
     ├── .venv/
     ├── functions.py
     ├── hostel_laundry.db
