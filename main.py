@@ -55,9 +55,10 @@ class RemovePlayerData(BaseModel):
     player_id: int
 
 class RegisterRequest(BaseModel):
-    username: str
+    name: str
     email: EmailStr
     password: str
+
 
 
 class LoginRequest(BaseModel):
@@ -135,12 +136,13 @@ def home():
 # A1 - Register user
 @app.post("/auth/register", status_code=201)
 def register(data: RegisterRequest):
-    if not data.username.strip() or not data.password.strip():
-        raise HTTPException(status_code=422,detail="Username and password cannot be empty")
-    result = functions.register_user(data.username,data.email,data.password)
+    if not data.name.strip() or not data.password.strip():
+        raise HTTPException(status_code=422, detail="Name and password cannot be empty")
+    result = functions.register_user(data.name, data.email, data.password)
     if result is False:
-        raise HTTPException(status_code=409,detail="Email already exists")
+        raise HTTPException(status_code=409, detail="Email already exists")
     return result
+
 
 
 # A2 - Login user

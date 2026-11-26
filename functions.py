@@ -150,24 +150,24 @@ def verify_password(password, hashed_password):
 
 
 # Register user
-def register_user(username, email, password):
+def register_user(name, email, password):
     session = Session(engine)
     user_exists = session.query(User).filter_by(email=email).first()
     if user_exists is not None:
         session.close()
         return False
-
-    new_user = User(username=username,email=email,hashed_password=hash_password(password),role="user")
+    new_user = User(name=name, email=email, password=hash_password(password), role="user")
     session.add(new_user)
     session.commit()
     response = {
         "id": new_user.id,
-        "username": new_user.username,
+        "name": new_user.name,
         "email": new_user.email,
         "role": new_user.role
     }
     session.close()
     return response
+
 
 # Create a signed access or refresh token.
 def create_token(user_id, token_type):
