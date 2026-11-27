@@ -629,8 +629,8 @@ def create_test_accounts():
     session = Session(engine)
     accounts = [
         ("Test Admin", "sivakumar24@gmail.com", "sivakumar@123", ADMIN),
-        ("Test Organizer", "organizer@test.com", "Organizer@123", ORGANIZER),
-        ("Test User", "user@test.com", "User@123", User)
+        ("Test Organizer", "aditya@gmail.com", "aditya@123", ADMIN),
+        ("Test User", "pavan@gmail.com", "pavan@123", ADMIN)
     ]
     for name, email, password, role in accounts:
         existing_user = session.query(User).filter_by(email=email).first()
