@@ -1,5 +1,11 @@
 
-# 🏏 IPL Fantasy Cricket League – Backend
+# IPL Fantasy Cricket League – Backend
+
+# Team 06 
+
+| Team | Partner 1 | Partner 2 | Partner 3 | Project |
+|---|---|---|---|---|
+| 04 | aditya | pavan | sivakumar | (https://github.com/ksivakumarreddy24-code/ipl-Cricket-League) |
 
 A Python-based IPL Fantasy Cricket League Backend API built using FastAPI and SQLite.
 
@@ -9,7 +15,7 @@ The system includes authentication, Role-Based Access Control (RBAC), tournament
 
 ---
 
-## 📌 Project Overview
+##  Project Overview
 
 The IPL Fantasy Cricket League provides three types of user roles:
 
@@ -21,7 +27,7 @@ The IPL Fantasy Cricket League provides three types of user roles:
 
 ---
 
-## ✨ Features
+##  Features
 
 - User registration and login
 - Secure password hashing using Argon2
@@ -40,7 +46,7 @@ The IPL Fantasy Cricket League provides three types of user roles:
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 | Technology | Purpose |
 |---|---|
@@ -57,7 +63,7 @@ The IPL Fantasy Cricket League provides three types of user roles:
 
 ---
 
-## 🗄️ Database Design
+##  Database Design
 
 The project contains 10 database tables.
 
@@ -87,7 +93,7 @@ The project contains 10 database tables.
 
 ---
 
-## 🔐 Authentication and Authorization
+##  Authentication and Authorization
 
 The project uses JWT-based authentication to secure API endpoints.
 
@@ -118,7 +124,7 @@ The project uses JWT-based authentication to secure API endpoints.
 
 ---
 
-## 🚀 API Endpoints
+##  API Endpoints
 
 The application provides the following REST API endpoints.
 
@@ -169,7 +175,7 @@ The application provides the following REST API endpoints.
 
 ---
 
-## 🏆 Fantasy Points System
+##  Fantasy Points System
 
 Fantasy points are calculated based on individual cricket player performances during a match.
 
@@ -189,7 +195,7 @@ The contest leaderboard ranks participating fantasy teams based on their calcula
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 ipl-Cricket-League/
@@ -224,7 +230,7 @@ ipl-Cricket-League/
 
 ---
 
-## 💻 Installation and Setup
+##  Installation and Setup
 
 ### Prerequisites
 
@@ -285,7 +291,7 @@ http://127.0.0.1:8001
 
 ---
 
-## 🐳 Docker Setup and Execution
+##  Docker Setup and Execution
 
 The project includes a Dockerfile for containerizing the FastAPI backend.
 
@@ -329,7 +335,7 @@ docker rm ipl-fantasy-container
 
 ---
 
-## 📖 API Documentation
+##  API Documentation
 
 FastAPI automatically generates interactive API documentation.
 
@@ -357,7 +363,7 @@ Swagger UI allows developers to:
 
 ---
 
-## ⚙️ CI/CD Pipeline
+##  CI/CD Pipeline
 
 The project uses GitHub Actions to automate the Docker image workflow.
 
@@ -375,7 +381,7 @@ Workflow configuration:
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 The project uses Pytest for automated testing.
 
@@ -399,7 +405,7 @@ Tests can cover the following modules:
 
 ---
 
-## 🎯 Project Objective
+##  Project Objective
 
 The primary objective of this project is to develop a secure backend system for an IPL Fantasy Cricket League.
 
@@ -420,7 +426,5 @@ This project demonstrates practical implementation of:
 
 
 
----
 
-## 📄 License
 
