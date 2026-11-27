@@ -628,7 +628,7 @@ def get_all_matches():
 def create_test_accounts():
     session = Session(engine)
     accounts = [
-        ("Test Admin", "sivakumar24@.com", "sivakumar@123", ADMIN),
+        ("Test Admin", "sivakumar24@gmail.com", "sivakumar@123", ADMIN),
         ("Test Organizer", "organizer@test.com", "Organizer@123", ORGANIZER),
         ("Test User", "user@test.com", "User@123", User)
     ]
