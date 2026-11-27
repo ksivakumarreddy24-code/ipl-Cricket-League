@@ -220,9 +220,6 @@ ipl-Cricket-League/
 │   └── workflows/
 │       └── docker.yml
 │
-├── tests/
-│   └── test_*.py
-│
 ├── main.py
 ├── functions.py
 ├── iplleague.db
@@ -236,7 +233,6 @@ ipl-Cricket-League/
 | File/Folder | Description |
 |---|---|
 | `.github/workflows/` | GitHub Actions workflow configuration |
-| `tests/` | Automated test cases |
 | `main.py` | FastAPI application and API endpoints |
 | `functions.py` | Database operations and business logic |
 | `iplleague.db` | SQLite database |
@@ -436,7 +432,6 @@ This project demonstrates practical implementation of:
 - Automatic fantasy point calculation.
 - Docker-based application containerization.
 - CI/CD automation using GitHub Actions.
-- Backend testing using Pytest.
 
 ---
 
