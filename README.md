@@ -27,6 +27,22 @@ The IPL Fantasy Cricket League provides three types of user roles:
 
 ---
 
+## 1. Who is doing what
+
+Update your own row at every check-in.
+
+| Day | Partner | What will you do? | Completed? | What are you going to work on next? | Stuck on? |
+|---|---|---|---|---|---|
+| Day 1 | aditya | E1 to E5 endpoints | E1 & E2 | E3 to E6 endpoints | no |
+| Day 1 | pavan| Authenticatin endpoints and E6,E7,E8,E9,E10 endpoints | Athentication Endpoints  | E7,E8,E9 Endpoints  | no |
+| Day 1 | sivakumar | Defined Endpoints from E11 to E15 | E11, E13 |E14, 15 | No |
+| Day 2 | aditya | working on E3,E4,E5, functions| completed | solve the errors|yes  |
+| Day 2 | pavan | E8,E9,E10 endpoints  | E8,E9,E10 endpoints  | solvoing the merge errors and checking swager  | yes |
+| Day 2 | sivakumar | Defining E14 and E15 | E14 , 15 | Assign Role Based Access | No |
+| Day 3 | aditya | solvoing the merge errors and checking swager with team  |done  | prepare for presentation  | no |
+| Day 3 | pavan | solvoing the merge errors and checking swager with team  | done | prepare for presentation  |  No  |
+| Day 3 | sivakumar |  solvoing the merge errors and checking swager with team  | done |  prepare for presentation | No |
+
 ##  Features
 
 - User registration and login
