@@ -5,7 +5,7 @@
 
 | Team | Partner 1 | Partner 2 | Partner 3 | Project |
 |---|---|---|---|---|
-| 04 | aditya | pavan | sivakumar | (https://github.com/ksivakumarreddy24-code/ipl-Cricket-League) |
+| 06 | aditya | pavan | sivakumar | (https://github.com/ksivakumarreddy24-code/ipl-Cricket-League) |
 
 A Python-based IPL Fantasy Cricket League Backend API built using FastAPI and SQLite.
 
