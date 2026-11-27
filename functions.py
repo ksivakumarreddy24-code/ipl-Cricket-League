@@ -67,7 +67,7 @@ class FantasyTeam(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     name = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now)
 
 # 6. Fantasy team players table
 class FantasyTeamPlayer(Base):
