@@ -264,11 +264,6 @@ source .venv/Scripts/activate
 .venv\Scripts\Activate.ps1
 ```
 
-**Linux / macOS:**
-
-```bash
-source .venv/bin/activate
-```
 
 ### Step 5: Install Dependencies
 
@@ -346,11 +341,6 @@ After starting the backend, open the following URLs:
 http://127.0.0.1:8001/docs
 ```
 
-### ReDoc
-
-```text
-http://127.0.0.1:8001/redoc
-```
 
 ### OpenAPI JSON
 
