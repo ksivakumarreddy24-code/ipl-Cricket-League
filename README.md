@@ -1,137 +1,436 @@
-# Ipl
 
-| Team | Partner 1 | Partner 2 | Partner 3| Project | Branch |
-|---|---|---|---|---|---|
-|  | Aditya | sivakumar | pavan|[Hostel-Laundry-machines]() | `IPL` |
+# 🏏 IPL Fantasy Cricket League – Backend
 
+A Python-based IPL Fantasy Cricket League Backend API built using FastAPI and SQLite.
 
-# Backend Setup and Execution
+This application allows users to create fantasy teams, select cricket players, participate in contests, earn fantasy points, and view contest leaderboards.
 
-Open a terminal and navigate to the backend folder.
+The system includes authentication, Role-Based Access Control (RBAC), tournament and match management, player statistics, and automatic fantasy point calculation.
 
-cd backend
+---
 
-### Create Virtual Environment
+## 📌 Project Overview
 
-python -m venv venv
+The IPL Fantasy Cricket League provides three types of user roles:
 
-### Activate Virtual Environment
+| Role | Responsibilities |
+|---|---|
+| Admin | Creates and manages organizer accounts |
+| Organizer | Manages players, tournaments, matches, contests and player statistics |
+| User | Creates fantasy teams, selects players and joins contests |
 
-Windows:
+---
 
-venv\Scripts\activate
+## ✨ Features
 
-### Install libraries
-pip install fastapi
-            pydantic 
-            sqlalchemy 
-            pyjwt 
-            argon2-cffi 
-            uvicorn
+- User registration and login
+- Secure password hashing using Argon2
+- JWT-based authentication with access and refresh tokens
+- Role-Based Access Control (RBAC)
+- Player management
+- Tournament creation and management
+- Match scheduling and management
+- Fantasy team creation
+- Add and remove players from fantasy teams
+- Contest creation and participation
+- Player match statistics management
+- Automatic fantasy point calculation
+- Contest leaderboard
+- Fantasy points history
 
-### Install Dependencies
+---
 
+## 🛠️ Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| Python | Backend programming language |
+| FastAPI | REST API development |
+| SQLite | Database |
+| SQLAlchemy | Object Relational Mapping (ORM) |
+| Pydantic | Request data validation |
+| PyJWT | Token generation and verification |
+| Argon2 | Password hashing |
+| Docker | Application containerization |
+| GitHub Actions | CI/CD automation |
+| Pytest | Python testing framework |
+
+---
+
+## 🗄️ Database Design
+
+The project contains 10 database tables.
+
+| No. | Table | Description |
+|---|---|---|
+| 1 | Users | Stores user details, passwords and roles |
+| 2 | Players | Stores cricket player information |
+| 3 | Tournaments | Stores tournament details |
+| 4 | Matches | Stores individual matches in tournaments |
+| 5 | Fantasy Teams | Stores teams created by users |
+| 6 | Fantasy Team Players | Connects fantasy teams with selected players |
+| 7 | Contests | Stores contests associated with matches |
+| 8 | Contest Entries | Stores fantasy team participation in contests |
+| 9 | Player Match Stats | Stores individual player performance statistics |
+| 10 | Fantasy Points History | Stores fantasy points earned by contest entries |
+
+### Database Relationships
+
+- One tournament can contain multiple matches.
+- A user can create multiple fantasy teams.
+- A fantasy team can contain multiple players.
+- A player can belong to multiple fantasy teams.
+- A match can have multiple contests.
+- A contest can have multiple entries.
+- Player match statistics are used to calculate fantasy points.
+- Fantasy points history maintains the points earned by contest participants.
+
+---
+
+## 🔐 Authentication and Authorization
+
+The project uses JWT-based authentication to secure API endpoints.
+
+### Authentication Features
+
+| Feature | Configuration |
+|---|---|
+| Password Hashing | Argon2 |
+| Authentication | JWT |
+| Access Token Expiration | 15 Minutes |
+| Refresh Token Expiration | 7 Days |
+| Authorization | Role-Based Access Control |
+
+### Role Permissions
+
+| Operation | Admin | Organizer | User |
+|---|:---:|:---:|:---:|
+| Create Organizer | ✅ | ❌ | ❌ |
+| Add Players | ❌ | ✅ | ❌ |
+| Create Tournament | ❌ | ✅ | ❌ |
+| Create Match | ❌ | ✅ | ❌ |
+| Create Contest | ❌ | ✅ | ❌ |
+| Publish Player Statistics | ❌ | ✅ | ❌ |
+| Create Fantasy Team | ❌ | ❌ | ✅ |
+| Add/Remove Players | ❌ | ❌ | ✅ |
+| Join Contest | ❌ | ❌ | ✅ |
+| View Public Data | ✅ | ✅ | ✅ |
+
+---
+
+## 🚀 API Endpoints
+
+The application provides the following REST API endpoints.
+
+### 1. Authentication APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/auth/register` | Register a new user |
+| POST | `/auth/login` | Login and generate tokens |
+| POST | `/auth/refresh` | Generate a new access token |
+
+### 2. Organizer and Player APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/organizers` | Create an organizer account |
+| POST | `/addplayer` | Add a cricket player |
+| GET | `/players` | Get all available players |
+| GET | `/players/{player_id}` | Get player details by ID |
+
+### 3. Tournament and Match APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/tournaments` | Create a tournament |
+| GET | `/tournaments` | Get all tournaments |
+| POST | `/matches` | Create a match |
+| GET | `/matches` | Get all matches |
+
+### 4. Fantasy Team APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/fantasy-team` | Create a fantasy team |
+| POST | `/fantasy-team/player` | Add a player to a fantasy team |
+| DELETE | `/fantasy-team/player` | Remove a player from a fantasy team |
+| GET | `/fantasy-teams` | Get the logged-in user's fantasy teams |
+
+### 5. Contest and Fantasy Points APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/contests` | Create a contest |
+| POST | `/contests/{contest_id}/join` | Join a contest |
+| POST | `/matches/{match_id}/stats` | Publish player match statistics |
+| GET | `/contests/{contest_id}/leaderboard` | Get contest leaderboard |
+| GET | `/fantasy-points/history` | Get fantasy points history |
+
+---
+
+## 🏆 Fantasy Points System
+
+Fantasy points are calculated based on individual cricket player performances during a match.
+
+| Player Performance | Fantasy Points |
+|---|:---:|
+| Each Run | +1 |
+| Each Four Bonus | +1 |
+| Each Six Bonus | +2 |
+| Each Wicket | +25 |
+| Each Catch | +8 |
+| Each Run Out | +12 |
+| Each Stumping | +12 |
+
+The total fantasy points earned by players contribute to their respective fantasy team's score.
+
+The contest leaderboard ranks participating fantasy teams based on their calculated points.
+
+---
+
+## 📁 Project Structure
+
+```text
+ipl-Cricket-League/
+│
+├── .github/
+│   └── workflows/
+│       └── docker.yml
+│
+├── tests/
+│   └── test_*.py
+│
+├── main.py
+├── functions.py
+├── iplleague.db
+├── requirements.txt
+├── Dockerfile
+└── README.md
+```
+
+### File Descriptions
+
+| File/Folder | Description |
+|---|---|
+| `.github/workflows/` | GitHub Actions workflow configuration |
+| `tests/` | Automated test cases |
+| `main.py` | FastAPI application and API endpoints |
+| `functions.py` | Database operations and business logic |
+| `iplleague.db` | SQLite database |
+| `requirements.txt` | Python dependencies |
+| `Dockerfile` | Docker image configuration |
+| `README.md` | Project documentation |
+
+---
+
+## 💻 Installation and Setup
+
+### Prerequisites
+
+- Python 3.10 or above
+- Git
+- Docker (Optional)
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/ksivakumarreddy24-code/ipl-Cricket-League.git
+```
+
+### Step 2: Navigate to the Project Directory
+
+```bash
+cd ipl-Cricket-League
+```
+
+### Step 3: Create a Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+### Step 4: Activate the Virtual Environment
+
+**Windows (Git Bash):**
+
+```bash
+source .venv/Scripts/activate
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+**Linux / macOS:**
+
+```bash
+source .venv/bin/activate
+```
+
+### Step 5: Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-### Run Backend
+### Step 6: Run the Backend
 
+```bash
 uvicorn main:app --reload --port 8001
+```
 
 Backend URL:
 
+```text
 http://127.0.0.1:8001
+```
 
+---
 
+## 🐳 Docker Setup and Execution
 
-## 8. Docker Setup and Execution
+The project includes a Dockerfile for containerizing the FastAPI backend.
 
 ### Build Docker Image
 
-docker build -t project-name .
+```bash
+docker build -t ipl-fantasy-league .
+```
 
 ### Run Docker Container
 
-docker run -d -p 8001:8001 --name project-container project-name
+```bash
+docker run -d -p 8001:8001 --name ipl-fantasy-container ipl-fantasy-league
+```
 
 ### Check Running Containers
 
+```bash
 docker ps
+```
 
 ### Stop Container
 
-docker stop project-container
+```bash
+docker stop ipl-fantasy-container
+```
 
-### start container
+### Start Container
 
-docker start project-container
+```bash
+docker start ipl-fantasy-container
+```
 
 ### Remove Container
 
-docker rm project-container
+```bash
+docker rm ipl-fantasy-container
+```
 
-API Documentation:
+**Note:** For persistent SQLite data, configure a suitable mounted data directory and database URL.
 
+---
+
+## 📖 API Documentation
+
+FastAPI automatically generates interactive API documentation.
+
+After starting the backend, open the following URLs:
+
+### Swagger UI
+
+```text
 http://127.0.0.1:8001/docs
+```
 
-##  API Requirements
+### ReDoc
 
-The application must provide APIs for the following. Fill in the API contract for each row.
+```text
+http://127.0.0.1:8001/redoc
+```
+
+### OpenAPI JSON
+
+```text
+http://127.0.0.1:8001/openapi.json
+```
+
+Swagger UI allows developers to:
+
+- Explore all available API endpoints.
+- View request and response schemas.
+- Test API requests directly from the browser.
+- Understand API validation and error responses.
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+The project uses GitHub Actions to automate the Docker image workflow.
+
+The CI/CD pipeline helps automate:
+
+- Triggering the workflow when changes are pushed to the configured GitHub branch.
+- Building the Docker image.
+- Publishing the Docker image when configured with the required registry credentials.
+
+Workflow configuration:
+
+```text
+.github/workflows/docker.yml
+```
+
+---
+
+## 🧪 Testing
+
+The project uses Pytest for automated testing.
+
+### Run All Tests
+
+```bash
+pytest -v
+```
+
+Tests can cover the following modules:
+
+- User registration and authentication.
+- JWT token validation.
+- Role-Based Access Control.
+- Player management.
+- Tournament and match management.
+- Fantasy team creation and player selection.
+- Contest participation.
+- Fantasy point calculation.
+- Contest leaderboard generation.
+
+---
+
+## 🎯 Project Objective
+
+The primary objective of this project is to develop a secure backend system for an IPL Fantasy Cricket League.
+
+This project demonstrates practical implementation of:
+
+- REST API development using FastAPI.
+- Relational database design and management.
+- SQLAlchemy ORM integration.
+- Secure authentication using JWT and Argon2.
+- Role-Based Access Control.
+- Backend business logic and data validation.
+- Automatic fantasy point calculation.
+- Docker-based application containerization.
+- CI/CD automation using GitHub Actions.
+- Backend testing using Pytest.
+
+---
 
 
-## 1. Who is doing what
 
-Update your own row at every check-in.
+---
 
-| Day | Partner | What will you do? | Completed? | What are you going to work on next? | Stuck on? |
-|---|---|---|---|---|---|
-| Day 1 | Aditya |  | | |   |
-| Day 1 | sivakumar |  | | | |
-| Day 1 | Pavan  |  |  |  |  |
-| Day 2 | sivakumar |  |  | |  |
-| Day 2 | Aditya | | | | |
-| Day 2 | Pavan  |  | |  ||
-| Day 3 | sivakumar | |  |  | |
-| Day 3 | Aditya | | |  | |
-| Day 3 | Pavan  | |  |  |  |
+## 📄 License
 
-## 2. Endpoint tracker
-
-Fill in the method and path from your PRD's endpoint table. Status: ✅ done · 🟡 in progress · ⬜ not started
-
-| # | Method + path | Built | Rules checked in /docs | Who |
-|---|---|---|---|---|
-| E1 | post/organizers | ✅ | ✅ | Aditya |
-| E2 | post/players | ✅ | ✅ | Aditya |
-| E3 | get("/players | ✅ | ✅ | Aditya  |
-| E4 | get/players/{player_id} | ✅ | ✅ | Aditya  |
-| E5 | post/tournaments | ✅ | ✅ | Aditya |
-| E6 | get/tournaments | ✅ | ✅ | pavan |
-| E7 | post/fantasy-team | ✅ | ✅ | pavan  |
-| E8 | post/fantasy-team/player | ✅ | ✅ | pavan |
-| E9 | delete/fantasy-team/player | ✅ | ✅ | pavan  |
-| E10 | get/fantasy-teams | ✅ | ✅ | pavan |
-| E11 | post/contests | ✅ | ✅ |  sivakumar |
-| E12 | post/contests/{contest_id}/join | ✅ | ✅ |  sivakumar  |
-| E13 | post/matches/{match_id}/stats | ✅ | ✅ | sivakumar  |
-| E14 | get/contests/{contest_id}/leaderboard | ✅ | ✅ | sivakumar   |
-| E15 | get/fantasy-points/history | ✅ | ✅ |  sivakumar  |
-
-## Datebase Tables
-
-| # | Table | Columns |
-| --- | --- | --- |
-| 1 | User |`id,name,email,password,role,created_at` |
-| 2 | player |`id,name,country,team,role,created_at`  |
-| 3 | Tournament | `id,name,season,start_date,end_date,created_by`|
-| 4 | Match | `id,tournament_id,team1,team2,match_date`, |
-| 5 | FantasyTeam| `id,user_id,name,created_at` |
-| 6 | FantasyTeamPlayer | `id,fantasy_team_id` |
-| 7 | Contest | `id,match_id,naem,entry_fee,max_entries,created_by`|
-| 8 | ContestEntry | `id,contest_id,fantasy_team_id,joined_at` |
-| 9 | PlayerMatchStat | `id,match_id,player_id,runs,fours,sixes,wickets,catches,run_outs,stumpings` |
-| 10 | FantasyPointsHistory | `id,contest_entry_id,match_id,points,created_at` |
-
-
-
-
-                   
